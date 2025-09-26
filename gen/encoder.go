@@ -320,7 +320,8 @@ func (g *Generator) notEmptyCheck(t reflect.Type, v string) string {
 		return v + ` != ""`
 	case reflect.Float32, reflect.Float64,
 		reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
-		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
+		reflect.Uintptr:
 
 		return v + " != 0"
 
