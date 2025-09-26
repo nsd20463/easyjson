@@ -30,6 +30,7 @@ type Generator struct {
 	SnakeCase                bool
 	LowerCamelCase           bool
 	OmitEmpty                bool
+	OmitZero                 bool
 	DisallowUnknownFields    bool
 	SkipMemberNameUnescaping bool
 
@@ -124,6 +125,9 @@ func (g *Generator) writeMain() (path string, err error) {
 	}
 	if g.OmitEmpty {
 		fmt.Fprintln(f, "  g.OmitEmpty()")
+	}
+	if g.OmitZero {
+		fmt.Fprintln(f, "  g.OmitZero()")
 	}
 	if g.NoStdMarshalers {
 		fmt.Fprintln(f, "  g.NoStdMarshalers()")
