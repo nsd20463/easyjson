@@ -25,6 +25,7 @@ var testCases = []struct {
 	{&structsValue, structsString},
 	{&omitEmptyValue, omitEmptyString},
 	{&omitZeroValue, omitZeroString},
+	{&omitEmptyAndZeroValue, omitEmptyAndZeroString},
 	{&snakeStructValue, snakeStructString},
 	{&omitEmptyDefaultValue, omitEmptyDefaultString},
 	{&omitZeroDefaultValue, omitZeroDefaultString},

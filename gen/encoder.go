@@ -362,6 +362,47 @@ func (g *Generator) notZeroCheck(t reflect.Type, v string) string {
 	}
 }
 
+func (g *Generator) notEmptyOrZeroCheck(t reflect.Type, v string) string {
+	isDefinedIface := reflect.TypeOf((*easyjson.Optional)(nil)).Elem()
+	implementsIsDefined := reflect.PtrTo(t).Implements(isDefinedIface)
+	isZeroIface := reflect.TypeOf((*easyjson.IsZero)(nil)).Elem()
+	implementsIsZero := reflect.PtrTo(t).Implements(isZeroIface)
+
+	if implementsIsDefined && implementsIsZero {
+		return "(" + v + ").IsDefined() || !(" + v + ").IsZero()"
+	} else if implementsIsDefined {
+		return "(" + v + ").IsDefined()"
+	} else if implementsIsZero {
+		return "!(" + v + ").IsZero()"
+	}
+
+	switch t.Kind() {
+	case reflect.Slice, reflect.Map:
+		return v + " != nil && len(" + v + ") != 0"
+	case reflect.Interface, reflect.Ptr:
+		return v + " != nil"
+	case reflect.Bool:
+		return v
+	case reflect.String:
+		return v + ` != ""`
+	case reflect.Float32, reflect.Float64,
+		reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
+		reflect.Uintptr:
+
+		return v + " != 0"
+	case reflect.Array:
+		// NOTE: stdlib encoding/json does not check if array elements implement IsZero, so we don't either
+		return "(" + v + " != " + g.getType(t) + "{})"
+	case reflect.Struct:
+		// NOTE: stdlib encoding/json does not check if struct fields implement IsZero, so we don't either
+		return "(" + v + " != " + g.getType(t) + "{})"
+
+	default:
+		return "true"
+	}
+}
+
 func (g *Generator) genStructFieldEncoder(t reflect.Type, f reflect.StructField, first, firstCondition bool) (bool, error) {
 	jsonName := g.fieldNamer.GetJSONFieldName(t, f)
 	tags := parseFieldTags(f)
@@ -384,7 +425,7 @@ func (g *Generator) genStructFieldEncoder(t reflect.Type, f reflect.StructField,
 		fmt.Fprintln(g.out, "  if", g.notZeroCheck(f.Type, "in."+f.Name), "{")
 		// can be any in runtime, so toggleFirstCondition stay as is
 	} else {
-		fmt.Fprintln(g.out, "  if", g.notEmptyCheck(f.Type, "in."+f.Name), "&&", g.notZeroCheck(f.Type, "in."+f.Name), "{")
+		fmt.Fprintln(g.out, "  if", g.notEmptyOrZeroCheck(f.Type, "in."+f.Name), "{")
 		// can be any in runtime, so toggleFirstCondition stay as is
 	}
 
